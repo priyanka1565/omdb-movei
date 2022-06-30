@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Poppins', sans-serif;
+            background-color: #131A27;
+        }
+
+        #main-head {
+            margin: 20px 0 0 30px;
+            color: white;
+        }
+
+        input {
+            display: block;
+            margin: 2px 0 20px 0;
+            border: white 2px solid;
+            color: white;
+            border-radius: 5px;
+        }
+
+        #form-container {
+            margin: 10px 0 20px 30px;
+            color: white;
+        }
+
+        input[type=submit] {
+            color: black;
+            background-color: white;
+            height: 40px;
+            width: 80px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        #movie-container {
+            margin: 30px;
+            display: flex;
+            flex-direction: row;
+            width: 75%;
+            min-height: 350px;
+            min-width: 600px;
+            border: black 2px solid;
+            border-radius: 10px;
+            padding: 2.5%;
+            color: white;
+            background-color: #030B17;
+        }
+
+        #poster-div {
+            width: 25%;
+            background-color: #030B17;
+            align-content: center;
+        }
+
+        #movie-info {
+            width: 70%;
+            padding: 2.5%;
+            background-color: #030B17;
+            display: flex;
+            flex-direction: column;
+        }
+        #movie-info *{
+            background-color: #030B17;
+            margin: 10px 10px;
+        }
+
+        #error-div{
+            margin: auto;
+            width: 400px;
+        }
+
+        #gif{
+            width: 100%;
+        }
+
+        #error-message{
+            text-align: center;
+            color: white;
+        }
+
+        #rec-div{
+            background-color: white;
+            margin-top: 6px;
+            border-radius: 4px;
+            width: 130px;
+        }
+
+        #rec-text{
+            background-color: white;
+            font-size: 14px;
+            color: #030B17;
+        }
+
+    </style>
+    <title>Movies</title>
+</head>
+
+<body>
+    <h1 id="main-head">What are you watching today?</h1>
+
+    <div id="form-container">
+
+        <form>
+            <label for="name">Name</label>
+            <input type="text" id="name">
+
+            <input type="submit" id="submit">
+        </form>
+
+    </div>
+
+    <div id="body-container"></div>
+
+</body>
+
+<script>
+
+    window.addEventListener("load", function () {
+        const submit = document.getElementById("submit");
+        submit.addEventListener("click", handleSubmit);
+    })
+
+    async function handleSubmit(e) {
+        try {
+            e.preventDefault();
+
+            const name = document.getElementById("name").value;
+
+            const response = await fetchPost(name);
+
+            if (response.Response === "False") {
+                showError();
+            }
+            else {
+                createPost(response);
+            }
+        }
+        catch {
+
+        }
+
+    }
+
+    function createPost(response) {
+        console.log(response)
+        const container = document.getElementById("body-container");
+        container.innerHTML = "";
+
+        const movieContainer = document.createElement("div");
+        movieContainer.setAttribute("id", "movie-container");
+
+        const title = response.Title;
+        const genre = response.Genre;
+        const year = response.Year;
+        const plot = response.Plot;
+        const poster = response.Poster;
+        const rating = response.imdbRating;
+        const director = response.Director;
+        const rated = response.Rated;
+
+        const moviePoster = document.createElement("div");
+        moviePoster.setAttribute("id", "poster-div");
+        moviePoster.innerHTML = `<img width = 100% src = ${poster} />`;
+
+        const movieInfo = document.createElement("div");
+        movieInfo.setAttribute("id", "movie-info");
+
+        const titleHead = document.createElement("h1");
+        titleHead.innerText = `${title} (${year})`;
+
+        const genreText = document.createElement("p");
+        genreText.innerText = `Genre: ${genre}`;
+
+        const plotText = document.createElement("p");
+        plotText.innerText = `Plot: ${plot}`;
+
+        const directorText = document.createElement("p");
+        directorText.innerText = `Director: ${director}`;
+
+        const ratingText = document.createElement("p");
+        ratingText.innerText = `IMDb Rating: ${rating}`;
+
+        const ratedText = document.createElement("p");
+        ratedText.innerText = `Rated: ${rated}`;
+
+        const recDiv = document.createElement("div");
+        recDiv.setAttribute("id", "rec-div");
+        const recText = document.createElement("p");
+        recText.textContent = `Recommended`;
+        recText.setAttribute("id", "rec-text");
+
+        container.append(movieContainer);
+        movieContainer.append(moviePoster);
+        movieContainer.append(movieInfo);
+
+        recDiv.append(recText);
+
+        if (rating > 8.5){
+            movieInfo.append(titleHead, recDiv, genreText, plotText, directorText, ratingText, ratedText);
+        }
+        else{
+            movieInfo.append(titleHead, genreText, plotText, directorText, ratingText, ratedText);
+        }
+
+    }
+
+    function fetchPost(name) {
+        return fetch(`http://www.omdbapi.com/?apikey=4088b873&t=${name}`)
+            .then(function (response) {
+                return response.json();
+            })
+            .catch(function (err) {
+
+            })
+    }
+
+    function showError(){
+        const container = document.getElementById("body-container");
+        container.innerHTML = "";
+
+        const errorDiv = document.createElement("div");
+        errorDiv.setAttribute("id", "error-div");
+
+        errorDiv.innerHTML = `<iframe id="gif" src="https://giphy.com/embed/14uQ3cOFteDaU" width="480" height="360" frameBorder="0" class="giphy-embed" allowFullScreen></iframe><p><a href="https://giphy.com/gifs/404-14uQ3cOFteDaU">via GIPHY</a></p>`;
+
+        const errorMessage = document.createElement("p");
+        errorMessage.textContent = `Nothing found. Try searching for something else!`;
+        errorMessage.setAttribute("id", "error-message");
+        
+        container.append(errorMessage, errorDiv);
+
+    }
+
+</script>
+
+</html>
